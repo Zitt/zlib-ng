@@ -5,7 +5,7 @@
 #if defined(_MSC_VER)
 #  if defined(_WIN64)
     typedef __int64 ssize_t;
-#  else
+#  elif !defined(UEFI)
     typedef long ssize_t;
 #  endif
 #endif

@@ -7,6 +7,9 @@
 
 #ifdef __APPLE__
 #  include <stdlib.h>
+#elif defined(UEFI)
+   #include <stdlib.h>
+   #include <Library/UefiLib.h>
 #else
 #  include <malloc.h>
 #endif
@@ -15,7 +18,7 @@
 static inline void *zng_alloc(size_t size) {
 #if defined(_WIN32)
     return (void *)_aligned_malloc(size, 64);
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(UEFI)
     return (void *)malloc(size);     /* MacOS always aligns to 16 bytes */
 #else
     return (void *)memalign(64, size);

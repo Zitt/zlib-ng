@@ -95,7 +95,10 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                     if (UNLIKELY(match_len > s->lookahead))
                         match_len = s->lookahead;
 
+#pragma warning( push )
+#pragma warning( disable : 4244 )    
                     check_match(s, s->strstart, hash_head, match_len);
+#pragma warning( pop )                    
 
                     zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - MIN_MATCH, (uint32_t)dist);
                     s->lookahead -= match_len;

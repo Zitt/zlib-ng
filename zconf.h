@@ -70,6 +70,11 @@
 #  else
 #    define Z_EXTERN extern __declspec(dllimport)
 #  endif
+#elif defined(UEFI)
+ #include <Base.h>
+ #include <Uefi.h>
+ #define Z_EXTERN extern 
+ #define Z_EXPORT EFIAPI
 #endif
 
 /* If building or using zlib with the WINAPI/WINAPIV calling convention,

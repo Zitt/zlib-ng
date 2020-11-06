@@ -6,6 +6,11 @@
 #include "zbuild.h"
 #include "zutil_p.h"
 #include "gzguts.h"
+#ifdef UEFI
+#include <Library/UefiLib.h>
+#include <Library/ShellLib.h>
+#include "../gzipUefi.h"
+#endif
 
 /* Local functions */
 static int gz_load(gz_state *, unsigned char *, unsigned, unsigned *);
@@ -15,6 +20,8 @@ static int gz_decomp(gz_state *);
 static int gz_fetch(gz_state *);
 static int gz_skip(gz_state *, z_off64_t);
 static size_t gz_read(gz_state *, void *, size_t);
+
+#ifndef UEFI
 
 /* Use read() to load a buffer -- return -1 on error, otherwise 0.  Read from
    state->fd, and update state->eof, state->err, and state->msg as appropriate.
@@ -38,6 +45,15 @@ static int gz_load(gz_state *state, unsigned char *buf, unsigned len, unsigned *
         state->eof = 1;
     return 0;
 }
+#else
+
+#define gz_error gz_UefiError
+
+static int gz_load(gz_state *state, unsigned char *buf, unsigned len, unsigned *have) {
+    return gz_loadUefi( state, buf, len, have );
+}
+
+#endif //UEFI
 
 /* Load up input buffer and set eof flag if last data loaded -- return -1 on
    error, 0 otherwise.  Note that the eof flag is set when the end of the input
@@ -270,6 +286,8 @@ static int gz_skip(gz_state *state, z_off64_t len) {
 static size_t gz_read(gz_state *state, void *buf, size_t len) {
     size_t got;
     unsigned n;
+    
+    //AsciiPrint("%a %a() ln%d\n", __FILE__, __FUNCTION__, __LINE__);
 
     /* if len is zero, avoid unnecessary operations */
     if (len == 0)
@@ -337,6 +355,8 @@ static size_t gz_read(gz_state *state, void *buf, size_t len) {
         buf = (char *)buf + n;
         got += n;
         state->x.pos += n;
+        
+        if (ShellGetExecutionBreakFlag ()) return 0;
     } while (len);
 
     /* return number of bytes read into user buffer */
@@ -346,6 +366,8 @@ static size_t gz_read(gz_state *state, void *buf, size_t len) {
 /* -- see zlib.h -- */
 int Z_EXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
     gz_state *state;
+    
+    //AsciiPrint("%a %a() ln%d\n", __FILE__, __FUNCTION__, __LINE__);
 
     /* get internal structure */
     if (file == NULL)
@@ -379,6 +401,8 @@ int Z_EXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
 size_t Z_EXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
     gz_state *state;
+    
+    //AsciiPrint("%a %a() ln%d\n", __FILE__, __FUNCTION__, __LINE__);
 
     /* Exit early if size is zero, also prevents potential division by zero */
     if (size == 0)
@@ -572,6 +596,7 @@ int Z_EXPORT PREFIX(gzdirect)(gzFile file) {
     return state->direct;
 }
 
+#ifndef UEFI
 /* -- see zlib.h -- */
 int Z_EXPORT PREFIX(gzclose_r)(gzFile file) {
     int ret, err;
@@ -600,3 +625,14 @@ int Z_EXPORT PREFIX(gzclose_r)(gzFile file) {
     zng_free(state);
     return ret ? Z_ERRNO : err;
 }
+#else
+
+int EFIAPI gz_decompUefi(gz_state *state) {
+ return gz_decomp(state);
+}
+
+int EFIAPI gz_fetchUefi(gz_state *state) {
+ return gz_fetch(state);
+}
+
+#endif //UEFI

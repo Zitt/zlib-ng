@@ -53,6 +53,8 @@
 #      define BYTE_ORDER LITTLE_ENDIAN
 #    endif
 #  endif
+#elif defined(UEFI)
+   #include <sys/endian.h>
 #else
 #  include <endian.h>
 #endif

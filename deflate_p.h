@@ -77,6 +77,8 @@ static inline int zng_tr_tally_dist(deflate_state *s, unsigned dist, unsigned ch
 #define MAX_STORED 65535
 
 /* Minimum of a and b. */
+#ifndef UEFI
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
+#endif
 
 #endif
