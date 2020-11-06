@@ -165,11 +165,16 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 
 /* Reverse the bytes in a value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
-#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+#if defined(_MSC_VER) && (_MSC_VER >= 1300) && (!defined(UEFI))
 #  pragma intrinsic(_byteswap_ulong)
 #  define ZSWAP16(q) _byteswap_ushort(q)
 #  define ZSWAP32(q) _byteswap_ulong(q)
 #  define ZSWAP64(q) _byteswap_uint64(q)
+
+#elifdef UEFI
+#  define ZSWAP16(q) bswap16(q)
+#  define ZSWAP32(q) bswap32(q)
+#  define ZSWAP64(q) bswap64(q)  
 
 #elif defined(__Clang__) || (defined(__GNUC__) && \
         (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)))

@@ -33,6 +33,10 @@ const char * Z_EXPORT zlibng_version(void) {
     return ZLIBNG_VERSION;
 }
 
+const INT32 Z_EXPORT zlibng_size(void) {
+    return sizeof(zng_stream);
+}
+
 unsigned long Z_EXPORT PREFIX(zlibCompileFlags)(void) {
     unsigned long flags;
 

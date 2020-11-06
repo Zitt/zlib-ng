@@ -31,20 +31,28 @@
 #if defined(ZLIB_COMPAT)
 #  include "zlib.h"
 #else
-#  include "zlib-ng.h"
+ #include "zlib-ng.h"
+#endif
+
+#ifndef PREFIX3
+ #include "zbuild.h"
 #endif
 
 #ifdef _WIN32
 #  include <stddef.h>
 #endif
 
-#if !defined(_MSC_VER) || defined(__MINGW__)
+#if !defined(_MSC_VER) || defined(__MINGW__) || defined(UEFI)
 #  include <unistd.h>       /* for lseek(), read(), close(), write(), unlink() */
 #endif
 
 #if defined(_WIN32)
 #  include <io.h>
 #  define WIDECHAR
+#endif
+
+#ifdef UEFI
+#include <Protocol/Shell.h>
 #endif
 
 #ifdef WINAPI_FAMILY
@@ -111,7 +119,11 @@ typedef struct {
                             /* x.pos: current position in uncompressed data */
         /* used for both reading and writing */
     int mode;               /* see gzip modes above */
+#ifndef UEFI    
     int fd;                 /* file descriptor */
+#else
+    SHELL_FILE_HANDLE fd;   /* file descriptor */
+#endif    
     char *path;             /* path or fd for error messages */
     unsigned size;          /* buffer size, zero if not allocated yet */
     unsigned want;          /* requested buffer size, default is GZBUFSIZE */

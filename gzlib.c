@@ -3,9 +3,13 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#include "zlib-ng.h"
 #include "zbuild.h"
 #include "zutil_p.h"
 #include "gzguts.h"
+
+#pragma warning( push )
+#pragma warning( disable : 4244 )
 
 #if defined(_WIN32)
 #  define LSEEK _lseeki64
@@ -16,6 +20,13 @@
 #  define LSEEK lseek
 #endif
 #endif
+
+#if defined(UEFI)
+#include <Library/UefiLib.h>
+#include <sys/fcntl.h>
+#endif
+
+#include <errno.h>
 
 /* Local functions */
 static void gz_reset(gz_state *);
@@ -84,6 +95,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
 #endif
             case '+':       /* can't read and write at the same time */
                 zng_free(state);
+                AsciiPrint("+can't read and write at the same time\n");
                 return NULL;
             case 'b':       /* ignore -- will request binary anyway */
                 break;
@@ -142,7 +154,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
             len = 0;
     } else
 #endif
-        len = strlen((const char *)path);
+    len = strlen((const char *)path);
     state->path = (char *)malloc(len + 1);
     if (state->path == NULL) {
         zng_free(state);
@@ -157,7 +169,10 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
         }
     else
 #endif
-        (void)snprintf(state->path, len + 1, "%s", (const char *)path);
+    (void)snprintf(state->path, len + 1, "%s", (const char *)path);
+#ifdef UEFI
+    AsciiPrint("state->path = %a == %a = path\n", state->path, path);
+#endif
 
     /* compute the flags for open() */
     oflag =
@@ -189,6 +204,8 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
 #endif
         open((const char *)path, oflag, 0666));
     if (state->fd == -1) {
+        AsciiPrint("returned state->fd == %d\n", state->fd);
+        AsciiPrint("errno=%d\n", errno);
         free(state->path);
         zng_free(state);
         return NULL;
@@ -541,3 +558,5 @@ unsigned Z_INTERNAL gz_intmax() {
     return q >> 1;
 }
 #endif
+
+#pragma warning( pop )

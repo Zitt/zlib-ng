@@ -9,6 +9,9 @@
 #include "deflate_p.h"
 #include "functable.h"
 
+#pragma warning( push )
+#pragma warning( disable : 4244 )
+
 /* ===========================================================================
  * Compress as much as possible from the input stream, return the current
  * block state.
@@ -104,3 +107,5 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
+
+#pragma warning( pop )

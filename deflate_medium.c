@@ -13,6 +13,9 @@
 #include "deflate_p.h"
 #include "functable.h"
 
+#pragma warning( push )
+#pragma warning( disable : 4244 )
+
 struct match {
     uint16_t match_start;
     uint16_t match_length;
@@ -290,4 +293,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
 
     return block_done;
 }
+
+#pragma warning( pop )
+
 #endif

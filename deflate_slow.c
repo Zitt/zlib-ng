@@ -9,6 +9,9 @@
 #include "deflate_p.h"
 #include "functable.h"
 
+#pragma warning( push )
+#pragma warning( disable : 4244 )
+
 /* ===========================================================================
  * Same as deflate_medium, but achieves better compression. We use a lazy
  * evaluation for matches: a match is finally adopted only if there is
@@ -135,3 +138,5 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
+
+#pragma warning( pop )

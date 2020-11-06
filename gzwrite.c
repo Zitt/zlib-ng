@@ -8,6 +8,14 @@
 #include <stdarg.h>
 #include "gzguts.h"
 
+#ifdef UEFI
+#include <Library/UefiLib.h>
+#include <Library/ShellLib.h>
+#include "../gzipUefi.h"
+
+#define gz_error gz_UefiError
+#endif
+
 /* Local functions */
 static int gz_init(gz_state *);
 static int gz_comp(gz_state *, int);
@@ -64,6 +72,8 @@ static int gz_init(gz_state *state) {
     }
     return 0;
 }
+
+#ifndef UEFI
 
 /* Compress whatever is at avail_in and next_in and write to the output file.
    Return -1 if there is an error writing to the output file or if gz_init()
@@ -136,6 +146,14 @@ static int gz_comp(gz_state *state, int flush) {
     /* all done, no errors */
     return 0;
 }
+
+#else //UEFI
+
+static int gz_comp(gz_state *state, int flush) {
+    return gz_compUefi( state, flush );
+}
+
+#endif //!UEFI
 
 /* Compress len zeros to output.  Return -1 on a write error or memory
    allocation failure by gz_comp(), or 0 on success. */
@@ -486,6 +504,8 @@ int Z_EXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
     return Z_OK;
 }
 
+#ifndef UEFI
+
 /* -- see zlib.h -- */
 int Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
     int ret = Z_OK;
@@ -524,3 +544,16 @@ int Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
     zng_free(state);
     return ret;
 }
+
+#else 
+//#/define gz_error gz_UefiError
+
+int EFIAPI gz_zeroUefi(gz_state *state, z_off64_t len) {
+    return gz_zero( state, len );
+}
+
+int EFIAPI gz_initUefi(gz_state *state) {
+    return gz_init(state);
+}
+
+#endif

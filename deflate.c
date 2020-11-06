@@ -214,8 +214,11 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
         unsigned int i;
         Pos *q = p - n;
         for (i = 0; i < n; i++) {
+#pragma warning( push )
+#pragma warning( disable : 4244 )        
             Pos m = *q;
             Pos t = wsize;
+#pragma warning( pop )           
             *q++ = (Pos)(m >= t ? m-t: 0);
         }
     }
@@ -238,8 +241,11 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
         Pos *q = p - n;
         for (i = 0; i < n; i++) {
             Pos m = *q;
-            Pos t = wsize;
+#pragma warning( push )
+#pragma warning( disable : 4244 )               
+            Pos t = wsize;         
             *q++ = (Pos)(m >= t ? m-t: 0);
+#pragma warning( pop )
         }
     }
 #endif /* NOT_TWEAK_COMPILER */
@@ -1570,9 +1576,12 @@ static block_state deflate_rle(deflate_state *s, int flush) {
 
         /* Emit match if have run of MIN_MATCH or longer, else emit literal */
         if (match_len >= MIN_MATCH) {
-            check_match(s, s->strstart, s->strstart - 1, match_len);
+#pragma warning( push )
+#pragma warning( disable : 4244 )        
+            check_match(s, s->strstart, s->strstart - 1, match_len);            
 
             bflush = zng_tr_tally_dist(s, 1, match_len - MIN_MATCH);
+#pragma warning( pop )
 
             s->lookahead -= match_len;
             s->strstart += match_len;
